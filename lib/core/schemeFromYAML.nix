@@ -20,7 +20,7 @@ let
     map (v: addContextFrom _sep (addContextFrom _s v)) splits;
   nameValuePair = name: value: { inherit name value; };
 
-  # From https://github.com/arcnmx/nixexprs
+  # from https://github.com/arcnmx/nixexprs
   fromYAML = yaml:
     let
       stripLine = line: elemAt (builtins.match "(^[^#]*)($|#.*$)" line) 0;
@@ -34,7 +34,7 @@ let
         else
           elemAt match 0;
       attrLine = line:
-        let match = builtins.match "([^ :]+): *(.*)" line;
+        let match = builtins.match " *([^ :]+): *(.*)" line;
         in if match == null then
           throw ''YAML parse failed: "${line}"''
         else
@@ -45,17 +45,38 @@ let
     in
     mapListToAttrs attrLine lines'';
 
-  convertScheme = slug: set: {
-    name = set.scheme;
-    inherit (set) author;
+  convertBase16Scheme = slug: set: {
+    inherit (set) name author;
     inherit slug;
     palette = {
       inherit (set)
-        base00 base01 base02 base03 base04 base05 base06 base07 base08 base09
-        base0A base0B base0C base0D base0E base0F;
+        base00 base01 base02 base03 base04 base05 base06 base07
+        base08 base09 base0A base0B base0C base0D base0E base0F;
+      base10 = set.base00;
+      base11 = set.base00;
+      base12 = set.base08;
+      base13 = set.base0A;
+      base14 = set.base0B;
+      base15 = set.base0C;
+      base16 = set.base0D;
+      base17 = set.base0E;
     };
   };
 
-  schemeFromYAML = slug: content: convertScheme slug (fromYAML content);
+  convertBase24Scheme = slug: set: {
+    inherit (set) name author;
+    inherit slug;
+    palette = {
+      inherit (set)
+        base00 base01 base02 base03 base04 base05 base06 base07
+        base08 base09 base0A base0B base0C base0D base0E base0F
+        base10 base11 base12 base13 base14 base15 base16 base17;
+    };
+  };
+
+  base16SchemeFromYAML = slug: content: convertBase16Scheme slug (fromYAML content);
+  base24SchemeFromYAML = slug: content: convertBase24Scheme slug (fromYAML content);
 in
-schemeFromYAML
+  {
+    inherit base16SchemeFromYAML base24SchemeFromYAML;
+  }

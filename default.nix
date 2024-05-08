@@ -1,6 +1,7 @@
 let
   inherit (builtins.fromJSON (builtins.readFile ./flake.lock)) nodes;
-  # Fetch using flake lock, for legacy compat
+
+  # fetch using flake lockfile; for legacy compat
   fromFlake = name:
     let inherit (nodes.${name}) locked;
     in fetchTarball {
@@ -10,25 +11,24 @@ let
     };
 
 in
-{ nixpkgs-lib ? import ((fromFlake "nixpkgs-lib") + "/lib")
-, base16-schemes ? fromFlake "base16-schemes"
-, ...
-}: rec {
-  lib-contrib = import ./lib/contrib;
-  lib-core = import ./lib/core { inherit nixpkgs-lib; };
-  lib = lib-core // { contrib = lib-contrib; };
+  { nixpkgs-lib ? import ((fromFlake "nixpkgs-lib") + "/lib"),
+    schemes-source ? fromFlake "schemes-source",
+    ...
+  }: rec {
+    lib-contrib = import ./lib/contrib;
+    lib-core = import ./lib/core { inherit nixpkgs-lib; };
+    lib = lib-core // { contrib = lib-contrib; };
 
-  tests = import ./lib/core/tests { inherit nixpkgs-lib; };
+    tests = import ./lib/core/tests { inherit nixpkgs-lib; };
 
-  colorSchemes = import ./schemes.nix { inherit lib base16-schemes; };
-  # Alias
-  colorschemes = colorSchemes;
+    colorSchemes = import ./schemes.nix { inherit lib schemes-source; };
+    colorschemes = colorSchemes; # alias
 
-  homeManagerModules = rec {
-    colorScheme = import ./module;
-    # Alias
-    colorscheme = colorScheme;
-    default = colorScheme;
-  };
-  homeManagerModule = homeManagerModules.colorScheme;
-}
+    homeManagerModules = rec {
+      colorScheme = import ./module;
+      colorscheme = colorScheme; # alias
+      default = colorScheme;
+    };
+
+    homeManagerModule = homeManagerModules.colorScheme;
+  }

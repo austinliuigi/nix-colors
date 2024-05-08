@@ -27,7 +27,7 @@
        };
      }
   */
-  schemeFromYAML = import ./schemeFromYAML.nix;
+  inherit (import ./schemeFromYAML.nix) base16SchemeFromYAML base24SchemeFromYAML;
 
   schemeToYAML = builtins.trace "nix-colors: schemeToYAML is deprecated and will be removed soon." (import ./schemeToYAML.nix);
 
