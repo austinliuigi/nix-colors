@@ -7,7 +7,7 @@
 
     # upstream source of .yaml schemes
     schemes-source = {
-      url = "github:austinliuigi/schemes";
+      url = "github:tinted-theming/schemes";
       flake = false;
     };
   };
