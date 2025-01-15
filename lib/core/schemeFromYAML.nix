@@ -23,12 +23,12 @@ let
   # from https://github.com/arcnmx/nixexprs
   fromYAML = yaml:
     let
-      stripLine = line: elemAt (builtins.match "(^[^#]*)($|#.*$)" line) 0;
+      stripLine = line: elemAt (builtins.match ''(^[^#]*".*"[^#]*|^[^#]*)($|#.*$)'' line) 0;
       usefulLine = line: builtins.match "[ \\t]*" line == null;
       parseString = token:
         let match = builtins.match ''([^"]+|"([^"]*)" *)'' token;
         in if match == null then
-          throw ''YAML string parse failed: "${token}"''
+          throw ''YAML string parse failed: "${token}" in the following: "${yaml}"''
         else if elemAt match 1 != null then
           elemAt match 1
         else
@@ -42,7 +42,9 @@ let
       lines = splitString "\n" yaml;
       lines' = map stripLine lines;
       lines'' = filter usefulLine lines';
+      # lines_str = (builtins.foldl' (x: y: x + y + "\n") "" lines'');
     in
+    # throw "${lines_str}";
     mapListToAttrs attrLine lines'';
 
   convertBase16Scheme = slug: set: {
@@ -74,6 +76,7 @@ let
     };
   };
 
+  # base16SchemeFromYAML = slug: content: throw "meow ${content}";
   base16SchemeFromYAML = slug: content: convertBase16Scheme slug (fromYAML content);
   base24SchemeFromYAML = slug: content: convertBase24Scheme slug (fromYAML content);
 in
